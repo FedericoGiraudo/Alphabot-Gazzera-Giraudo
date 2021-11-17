@@ -3,6 +3,7 @@ In questa repository si puo trovare lo sviluppo di un progetto che consiste nel 
 
 ## File
 * **comandi.db** : E il database contenente tutti i movimenti composti
+* **libreria_robot.py** : Questo file contiene la classe Alphabot con tutti i metodi per far muovere il robot
 * **clientTCP.py** : Il client sarà il programma da scaricare sul proprio dispositivo e servirà ad inviare i comandi all'Alphabot
 *  **server_robot_1/2/3.py** : Il server sarà invece il programma da installare sull'Alphabot e servirà a ricevere i comandi dal server e di conseguenza esegurli. Ci sono tre versioni, dalla versione piu base a quella che comprende i movimenti composti.
 
