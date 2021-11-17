@@ -1,10 +1,10 @@
 import socket as sck
-import time
+import time                      #importo le librerie socket, time, RPi.GPIO e sqlite3
 import RPi.GPIO as GPIO
 import sqlite3
 
 
-class AlphaBot(object):
+class AlphaBot(object):         #creo una classe Alphabot
     
     def __init__(self, in1=13, in2=12, ena=6, in3=21, in4=20, enb=26):
         self.IN1 = in1
@@ -34,7 +34,7 @@ class AlphaBot(object):
             self.PWMA.ChangeDutyCycle(0)
             self.PWMB.ChangeDutyCycle(0)
             GPIO.output(self.IN1, GPIO.LOW)
-            GPIO.output(self.IN2, GPIO.LOW)
+            GPIO.output(self.IN2, GPIO.LOW)         #funzione per permettere al robot di fermarsi
             GPIO.output(self.IN3, GPIO.LOW)
             GPIO.output(self.IN4, GPIO.LOW)
             
@@ -42,7 +42,7 @@ class AlphaBot(object):
         self.PWMA.ChangeDutyCycle(self.PA)
         self.PWMB.ChangeDutyCycle(self.PB)
         GPIO.output(self.IN1, GPIO.HIGH)
-        GPIO.output(self.IN2, GPIO.LOW)
+        GPIO.output(self.IN2, GPIO.LOW)             #funzione per permettere al robot di girare a sinistra
         GPIO.output(self.IN3, GPIO.HIGH)
         GPIO.output(self.IN4, GPIO.LOW)
         time.sleep(t/1000)
@@ -53,7 +53,7 @@ class AlphaBot(object):
         self.PWMA.ChangeDutyCycle(self.PA)
         self.PWMB.ChangeDutyCycle(self.PB)
         GPIO.output(self.IN1, GPIO.LOW)
-        GPIO.output(self.IN2, GPIO.HIGH)
+        GPIO.output(self.IN2, GPIO.HIGH)            #funzione per permettere al robot di girare a destra
         GPIO.output(self.IN3, GPIO.LOW)
         GPIO.output(self.IN4, GPIO.HIGH)
         time.sleep(t/1000)
@@ -63,7 +63,7 @@ class AlphaBot(object):
         self.PWMA.ChangeDutyCycle(speed)
         self.PWMB.ChangeDutyCycle(speed)
         GPIO.output(self.IN1, GPIO.LOW)
-        GPIO.output(self.IN2, GPIO.HIGH)
+        GPIO.output(self.IN2, GPIO.HIGH)            #funzione per permettere al robot di andare avanti
         GPIO.output(self.IN3, GPIO.HIGH)
         GPIO.output(self.IN4, GPIO.LOW)
         time.sleep(t/1000)
@@ -73,8 +73,8 @@ class AlphaBot(object):
         while speed<=100 :
             self.PWMA.ChangeDutyCycle(speed)
             self.PWMB.ChangeDutyCycle(speed)
-            GPIO.output(self.IN1, GPIO.LOW)
-            GPIO.output(self.IN2, GPIO.HIGH)
+            GPIO.output(self.IN1, GPIO.LOW)         #funzione che, grazie ad uno sleep, permette di far andar avanti il robot
+            GPIO.output(self.IN2, GPIO.HIGH)        #con una velocità che aumenta gradualmente fino a 100
             GPIO.output(self.IN3, GPIO.HIGH)
             GPIO.output(self.IN4, GPIO.LOW)
             time.sleep(0.2)
@@ -87,7 +87,7 @@ class AlphaBot(object):
         self.PWMA.ChangeDutyCycle(speed)
         self.PWMB.ChangeDutyCycle(speed)
         GPIO.output(self.IN1, GPIO.HIGH)
-        GPIO.output(self.IN2, GPIO.LOW)
+        GPIO.output(self.IN2, GPIO.LOW)             #funzione per permettere al robot di andare indietro
         GPIO.output(self.IN3, GPIO.LOW)
         GPIO.output(self.IN4, GPIO.HIGH)
         time.sleep(t/1000)
@@ -120,57 +120,56 @@ class AlphaBot(object):
             self.PWMB.ChangeDutyCycle(0 - left)
 
 if __name__ == '__main__':
-    s = sck.socket(sck.AF_INET, sck.SOCK_STREAM)
+    s = sck.socket(sck.AF_INET, sck.SOCK_STREAM)    #creo un socket TCP tipo ipv4
 
     s.bind(('0.0.0.0', 5000)) #(indirizzo ip della macchina server (0.0.0.0 = il mio ip), porta
     s.listen() #alloca i dati
-    conn, addr = s.accept() #dati ricevuti(data), addr Ã¨ una tupla con indirizzo ip del client e porta del client
-    Ab = AlphaBot()      
+    conn, addr = s.accept() #dati ricevuti(data), addr è una tupla con indirizzo ip del client e porta del client
+    Ab = AlphaBot()         #creo un nuovo oggetto di tipo Alphabot
     while True:
-        data= conn.recv(4096).decode() 
-        conn1 = sqlite3.connect('./comandi.db')
-        cur = conn1.cursor()
+        data= conn.recv(4096).decode()          # #tramite la recv ricevo i messaggi in binario dal client, li decodifico e li metto in una variabile
+        conn1 = sqlite3.connect('./comandi.db')     #creo una connessione con il database comandi
+        cur = conn1.cursor()            #creo un cursore per riuscire ad interagire con il database
         query = f"SELECT funzione FROM movimenti WHERE movimento = '{data}'"
-        print(query)
-        cur.execute (query)
-        rows = cur.fetchall()
-        for row in rows:
+        print(query)    #creo e stampo una query che, in base al messaggio che viene mandato al server, selezione la funzione omonima nella tabella movimenti
+        cur.execute (query)         #esegue la query scritta precedentemente
+        rows = cur.fetchall()  #crea una lista rows contenente tutte le righe della tabella
+        for row in rows:        #faccio un ciclo che gira su ogni riga
             print(row[0])
         
-        if "," in row[0]:
-            comandi = row[0].split(",")
-            for comando in comandi:
-                c = comando.split(" ")  
-                if(c[0]=='r'):
-                    Ab.right(float(c[1]))
-                if(c[0]=='l'):
-                    Ab.left(float(c[1]))
-                if(c[0]=='s'):
-                    Ab.stop()
-                if(c[0]=='i'):
-                    Ab.backward(float(c[1]))
-                if(c[0]=='a'):
-                    Ab.forward(float(c[1]))
-                if(c[0]=='aa'):
-                    Ab.forward_2(float(c[1]))               
-        else: 
-            comando = row[0].split(" ")  
-            if(comando[0]=='r'):
-                Ab.right(float(comando[1]))
-            if(comando[0]=='l'):
-                Ab.left(float(comando[1]))
-            if(comando[0]=='s'):
-                Ab.stop()
-            if(comando[0]=='i'):
-                Ab.backward(float(comando[1]))
-            if(comando[0]=='a'):
-                Ab.forward(float(comando[1]))
-            if(comando[0]=='aa'):
-                Ab.forward_2(float(comando[1]))
+        if "," in row[0]:                   #se nella riga del comando è presente una virgola:
+            comandi = row[0].split(",")    #divido la riga ad ogni virgola che trovo, e metto i singoli comandi in una lista
+            for comando in comandi:         #faccio un ciclo sulla lista dei comandi e li eseguo uno ad uno
+                c = comando.split(" ")     #divido ancora ogni comando in: lettera che richiama la funzione e il tempo
+                if(c[0]=='r'):                   #se c[0], ovvero il comando è uguale a r:
+                    Ab.right(float(c[1]))        # verrà svolta la funzione right ovvero il robot girerà verso destra su se stesso per il tempo che c'è in c[1]
+                if(c[0]=='l'):                   #se c[0], ovvero il comando è uguale a l:
+                    Ab.left(float(c[1]))         # verrà svolta la funzione left ovvero il robot girerà verso sinistra su se stesso per il tempo che c'è in c[1]
+                if(c[0]=='s'):                   # se c[0], ovvero il comando è uguale a s:
+                    Ab.stop()                    #verrà svolta la funzione stop ovvero il robot si fermerà
+                if(c[0]=='i'):                   # se c[0], ovvero il comando è uguale a i:
+                    Ab.backward(float(c[1]))     # verrà svolta la funzione backward ovvero il robot andrà indietro per il tempo che c'è in c[1]
+                if(c[0]=='a'):                   # se c[0], ovvero il comando è uguale a a:
+                    Ab.forward(float(c[1]))      # verrà svolta la funzione forward ovvero il robot andrà in avanti per il tempo che c'è in c[1]
+                if(c[0]=='aa'):                  # se c[0], ovvero il messaggio è uguale a aa:
+                    Ab.forward_2(float(c[1]))    #verrà svolta la funzione forward_2 ovvero il robot andrà avanti con la velocità che aumenta gradualmente          
+        else:                                       #se nella riga del messaggio non è presente nessuna virgola:
+            comando = row[0].split(" ")             #divido il comando in: lettera che richiama la funzione e il tempo
+            if(comando[0]=='r'):                    # se comando[0], ovvero il comando è uguale a r:
+                Ab.right(float(comando[1]))         # verrà svolta la funzione right ovvero il robot girerà verso destra su se stesso per il tempo che c'è in comando[1]
+            if(comando[0]=='l'):                    # se comando[0], ovvero il comando è uguale a l:
+                Ab.left(float(comando[1]))          # verrà svolta la funzione left ovvero il robot girerà verso sinistra su se stesso per il tempo che c'è in comando[1]
+            if(comando[0]=='s'):                    # se comando[0], ovvero il comando è uguale a s:
+                Ab.stop()                            #verrà svolta la funzione stop ovvero il robot si fermerà
+            if(comando[0]=='i'):                    # se comando[0], ovvero il comando è uguale a i:
+                Ab.backward(float(comando[1]))      # verrà svolta la funzione backward ovvero il robot andrà indietro per il tempo che c'è in comando[1]
+            if(comando[0]=='a'):                    # se comando[0], ovvero il comando è uguale a a:
+                Ab.forward(float(comando[1]))       # verrà svolta la funzione forward ovvero il robot andrà in avanti per il tempo che c'è in comando[1]
+            if(comando[0]=='aa'):                   # se comando[0], ovvero il comando è uguale a aa:
+                Ab.forward_2(float(comando[1]))     #verrà svolta la funzione forward_2 ovvero il robot andrà avanti con la velocità che aumenta gradualmente
         
-sck.close() 
+sck.close()                     #chiudo il socket
             
-
 
 
 

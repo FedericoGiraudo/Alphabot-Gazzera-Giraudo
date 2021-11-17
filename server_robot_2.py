@@ -1,9 +1,9 @@
 import socket as sck
-import time
+import time                     #importo le librerie socket, time e RPi.GPIO
 import RPi.GPIO as GPIO
 
 
-class AlphaBot(object):
+class AlphaBot(object):          #creo una classe Alphabot
     
     def __init__(self, in1=13, in2=12, ena=6, in3=21, in4=20, enb=26):
         self.IN1 = in1
@@ -33,7 +33,7 @@ class AlphaBot(object):
             self.PWMA.ChangeDutyCycle(0)
             self.PWMB.ChangeDutyCycle(0)
             GPIO.output(self.IN1, GPIO.LOW)
-            GPIO.output(self.IN2, GPIO.LOW)
+            GPIO.output(self.IN2, GPIO.LOW)     #funzione per permettere al robot di fermarsi 
             GPIO.output(self.IN3, GPIO.LOW)
             GPIO.output(self.IN4, GPIO.LOW)
             
@@ -41,7 +41,7 @@ class AlphaBot(object):
         self.PWMA.ChangeDutyCycle(self.PA)
         self.PWMB.ChangeDutyCycle(self.PB)
         GPIO.output(self.IN1, GPIO.HIGH)
-        GPIO.output(self.IN2, GPIO.LOW)
+        GPIO.output(self.IN2, GPIO.LOW)          #funzione per permettere al robot di girare a sinistra per un certo tempo t
         GPIO.output(self.IN3, GPIO.HIGH)
         GPIO.output(self.IN4, GPIO.LOW)
         time.sleep(t)
@@ -52,7 +52,7 @@ class AlphaBot(object):
         self.PWMA.ChangeDutyCycle(self.PA)
         self.PWMB.ChangeDutyCycle(self.PB)
         GPIO.output(self.IN1, GPIO.LOW)
-        GPIO.output(self.IN2, GPIO.HIGH)
+        GPIO.output(self.IN2, GPIO.HIGH)        #funzione per permettere al robot di girare a destra per un certo tempo t
         GPIO.output(self.IN3, GPIO.LOW)
         GPIO.output(self.IN4, GPIO.HIGH)
         time.sleep(t)
@@ -61,7 +61,7 @@ class AlphaBot(object):
     def forward(self,t, speed =30):
         self.PWMA.ChangeDutyCycle(speed)
         self.PWMB.ChangeDutyCycle(speed)
-        GPIO.output(self.IN1, GPIO.LOW)
+        GPIO.output(self.IN1, GPIO.LOW)         #funzione per permettere al robot di andare avanti per un certo tempo t
         GPIO.output(self.IN2, GPIO.HIGH)
         GPIO.output(self.IN3, GPIO.HIGH)
         GPIO.output(self.IN4, GPIO.LOW)
@@ -73,8 +73,8 @@ class AlphaBot(object):
             self.PWMA.ChangeDutyCycle(speed)
             self.PWMB.ChangeDutyCycle(speed)
             GPIO.output(self.IN1, GPIO.LOW)
-            GPIO.output(self.IN2, GPIO.HIGH)
-            GPIO.output(self.IN3, GPIO.HIGH)
+            GPIO.output(self.IN2, GPIO.HIGH)    #funzione che, grazie ad uno sleep, permette di far andar avanti il robot
+            GPIO.output(self.IN3, GPIO.HIGH)    #con una velocità che aumenta gradualmente fino a 100
             GPIO.output(self.IN4, GPIO.LOW)
             time.sleep(0.2)
             speed+=2
@@ -86,7 +86,7 @@ class AlphaBot(object):
         self.PWMA.ChangeDutyCycle(speed)
         self.PWMB.ChangeDutyCycle(speed)
         GPIO.output(self.IN1, GPIO.HIGH)
-        GPIO.output(self.IN2, GPIO.LOW)
+        GPIO.output(self.IN2, GPIO.LOW)         #funzione per permettere al robot di andare indietro per un certo tempo t 
         GPIO.output(self.IN3, GPIO.LOW)
         GPIO.output(self.IN4, GPIO.HIGH)
         time.sleep(t)
@@ -119,28 +119,27 @@ class AlphaBot(object):
             self.PWMB.ChangeDutyCycle(0 - left)
 
 if __name__ == '__main__':
-    s = sck.socket(sck.AF_INET, sck.SOCK_STREAM)
+    s = sck.socket(sck.AF_INET, sck.SOCK_STREAM)    #creo un socket TCP tipo ipv4
 
     s.bind(('0.0.0.0', 5000)) #(indirizzo ip della macchina server (0.0.0.0 = il mio ip), porta
     s.listen() #alloca i dati
-    conn, addr = s.accept() #dati ricevuti(data), addr Ã¨ una tupla con indirizzo ip del client e porta del client
-    Ab = AlphaBot()
+    conn, addr = s.accept() #dati ricevuti(data), addr è una tupla con indirizzo ip del client e porta del client
+    Ab = AlphaBot()          #creo un nuovo oggetto di tipo Alphabot
     while True:
-        data= conn.recv(4096).decode().split(" ")
-        print(data)
-        if(data[0]=='r'):
-            Ab.right(float(data[1]))
-        if(data[0]=='l'):
-            Ab.left(float(data[1]))
-        if(data[0]=='s'):
-            Ab.stop()
-        if(data[0]=='i'):
-            Ab.backward(float(data[1]))
-        if(data[0]=='a'):
-            Ab.forward(float(data[1]))
-        if(data[0]=='aa'):
-            Ab.forward_2(float(data[1]))
+        data= conn.recv(4096).decode().split(" ") #tramite la recv, ricevo dal client un comando e il tempo t in un unica stringa
+        print(data)                               #con il metodo split, data diventa una lista di due elementi: la lettera che richiama la funzione e il tempo
+        if(data[0]=='r'):                   # se data[0], ovvero il comando è uguale a r
+            Ab.right(float(data[1]))        # verrà svolta la funzione right ovvero il robot girerà verso destra su se stesso per il tempo che c'è in data[1]
+        if(data[0]=='l'):                   # se data[0], ovvero il comando è uguale a l
+            Ab.left(float(data[1]))         # verrà svolta la funzione left ovvero il robot girerà verso sinistra su se stesso per il tempo che c'è in data[1]
+        if(data[0]=='s'):                   # se data[0], ovvero il comando è uguale a s
+            Ab.stop()                       #verrà svolta la funzione stop ovvero il robot si fermerà
+        if(data[0]=='i'):                   # se data[0], ovvero il comando è uguale a i
+            Ab.backward(float(data[1]))     # verrà svolta la funzione backward ovvero il robot andrà indietro per il tempo che c'è in data[1]
+        if(data[0]=='a'):                   # se data[0], ovvero il comando è uguale a a
+            Ab.forward(float(data[1]))      # verrà svolta la funzione forward ovvero il robot andrà in avanti per il tempo che c'è in data[1]
+        if(data[0]=='aa'):                  # se data[0], ovvero il messaggio è uguale a aa
+            Ab.forward_2(float(data[1]))    #verrà svolta la funzione forward_2 ovvero il robot andrà avanti con la velocità che aumenta gradualmente
             
-        
-        
-sck.close()
+            
+sck.close()         #chiudo il socket
