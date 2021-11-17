@@ -23,6 +23,7 @@ In questo repository si può trovare lo sviluppo di un progetto che consiste nel
 | Nome comando      | Descrizione                        | 
 | :-------- | :--------------------------------- | 
 | `zig_zag`  | Questo comando consente di far muovere l'Alphabot con un movimento a zigzag   |
+| `otto`  | Questo comando consente di far muovere l'Alphabot con un movimento a forma di otto   |
 | `R_90`  | Questo comando consente di far muovere l'Alphabot nella direzione "destra" con un angolo di 90°    | 
 | `L_90`  | Questo comando consente di far muovere l'Alphabot nella direzione "sinistra" con un angolo di 90°  |
 | `R_180`  | Questo comando consente di far muovere l'Alphabot nella direzione "destra" con un angolo di 180°  | 
